@@ -68,7 +68,7 @@ Os protótipos das telas foram organizados de acordo com o fluxo principal da ap
 
 #### Tela de Detalhes — RF10
 
-![Detalhes da Imagem](preview/DETALLE.png)
+![Detalhes da Imagem](preview/DETALHE.png)
 
 ---
 

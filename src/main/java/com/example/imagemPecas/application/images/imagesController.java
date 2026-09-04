@@ -5,6 +5,7 @@ import com.example.imagemPecas.domain.enums.ImageExtension;
 import com.example.imagemPecas.domain.service.imageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -41,8 +42,19 @@ public class imagesController {
 
     //v1/images/{id}
     @GetMapping("{id}")
-    public ResponseEntity<byte[]> getImage(String id){
+    public ResponseEntity<byte[]> getImage(@PathVariable("id") String id){
+        var possibleImage = service.getById(id);
+        if(possibleImage.isEmpty()){
+            return ResponseEntity.notFound().build();
+        }
+        var image = possibleImage.get();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(image.getExtension().getMediaType());
+        headers.setContentLength(image.getSize());
+        headers.setContentDispositionFormData("", image.getName().concat("").concat(image.getExtension().name()));
         return ResponseEntity.ok().build();
+
     }
 
 

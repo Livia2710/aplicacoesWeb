@@ -1,6 +1,7 @@
 package com.example.imagemPecas.application.images;
 
 import com.example.imagemPecas.domain.entity.Image;
+import com.example.imagemPecas.application.images.imageDTO;
 import com.example.imagemPecas.domain.enums.ImageExtension;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -18,6 +19,16 @@ public class imageMapper {
                 .size(file.getSize())
                 .extension(ImageExtension.valueOf(MediaType.valueOf(file.getContentType())))
                 .file(file.getBytes())
+                .build();
+    }
+
+    public imageDTO imageDTO(Image image, String url){
+        return imageDTO.builder()
+                .url(url)
+                .extension(image.getExtension().name())
+                .name(image.getName())
+                .size(image.getSize())
+                .uploadData(image.getUploadData().toLocalDate())
                 .build();
     }
 }

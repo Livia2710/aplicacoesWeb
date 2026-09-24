@@ -52,7 +52,6 @@ public class imagesController {
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(image.getExtension().getMediaType());
-
         headers.setContentLength(image.getSize());
         //headers.setContentDispositionFormData("", image.getFileName());
         headers.setContentDispositionFormData("inline; filenamme=\"" + image.getName() + "\"", image.getFileName());

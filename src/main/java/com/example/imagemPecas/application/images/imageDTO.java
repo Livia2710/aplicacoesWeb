@@ -12,7 +12,4 @@ public class imageDTO {
     private String extension;
     private long size;
     private LocalDate uploadData;
-
-
-
 }

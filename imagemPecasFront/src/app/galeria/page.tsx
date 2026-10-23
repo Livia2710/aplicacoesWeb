@@ -1,4 +1,3 @@
-import { Header } from "@/componentes/Header";
 import { Template } from "@/componentes/Template";
 
 export default function GaleriaPage() {

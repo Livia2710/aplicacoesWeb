@@ -20,7 +20,7 @@ export const Template: React.FC<TemplateProps> = (props: TemplateProps) => {
 
 const Header: React.FC = () => {
   return (
-    <header className="z-50 h-20 w-full header-fixed backdrop-blur-md text-bege-escuro shadow-header px-6 md:px-12 flex items-center justify-between">
+    <header className="z-50 h-20 w-full header-fixed border-b border-foreground/10 backdrop-blur-md text-bege-escuro shadow-header px-6 md:px-12 flex items-center justify-between">
       <div>
         <Link 
         href="/" 
@@ -54,10 +54,12 @@ const Header: React.FC = () => {
 
 const Footer: React.FC = () => {
   return (
-    <footer className="bg-red-600 text-white py-4 mt-8">
-      <div className="container mx-auto text-center">
-       <p className="mt-10 text-center text-sm"> Desenvolvimento por Lívia</p>
+    <footer className="mt-auto border-t border-foreground/10 px-6 py-6 text-foreground/60 md:px-12">
+      <div className="mx-auto flex max-w-[1600px] flex-col items-center justify-between gap-2 text-center sm:flex-row sm:text-left">
+        <p className="text-xs uppercase tracking-[0.18em]">Imagem Peças</p>
+        <p className="text-sm">Desenvolvimento por Lívia</p>
       </div>
     </footer>
   )
 }
+

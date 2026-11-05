@@ -1,31 +1,33 @@
 'use client'
 
 import { Template, ImageCard } from '@/componentes';
+import { Image } from '@/resources/image/image.resources';
+import { useImageService} from '@/resources/image/image.service';
 import { useState } from 'react';
 
 export default function GaleriaPage() {
+  const useService = useImageService();
+  const [images, setImages] = useState<Image[]>([]);
+  
+  async function searchImagem(){
+    const result = await useService.buscar();
+    setImages(result);
+    console.table(result);
+  }
 
-  const image1 = 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1200&q=85';
-  const image2 = 'https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?auto=format&fit=crop&w=1200&q=85';
+  function renderImageCard(image: Image){
+    return (
+      <ImageCard key={image.url}
+                 nome={image.name}
+                 src={image.url}
+                 tamanho={image.size}
+                 dataUpload={image.uploadDate}/>
+    )
+  }
 
-  const nome1 = 'Placa Mãe';
-  const nome2 = 'Resistor';
-
-  const [codigoImage, setCodigoImage] = useState<number>(2);
-  const [urlImage, setUrlImage] = useState<string>(image2);
-
-  const [nomeImage, setNomeImage] = useState<string>(nome2);
-
-  function mudarImagem(){
-    if(codigoImage == 1){
-      setCodigoImage(2);
-      setUrlImage(image2);
-      setNomeImage(nome2);
-    }else{
-      setCodigoImage(1);
-      setUrlImage(image1);
-      setNomeImage(nome1);
-    }
+  function renderImageCards(){
+    //return images.map(image => renderImageCard(image));
+    return images.map(renderImageCard);
   }
 
   return (
@@ -37,17 +39,17 @@ export default function GaleriaPage() {
           </h1>
           <button
             className="border border-foreground/30 px-4 py-2 text-xs uppercase tracking-[0.16em] text-foreground transition hover:border-accent hover:text-accent"
-            onClick={mudarImagem}
+            onClick={searchImagem}
             type="button"
           >
-            Trocar imagem
+            Clique aqui para Mudar
           </button>
         </div>
         <section aria-label="Imagens da galeria" className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 xl:gap-6">
-          <ImageCard nome={nomeImage} tamanho='10MB' dataUpload='01/01/2026' src={urlImage}/>
-          <ImageCard nome={nomeImage} tamanho='10MB' dataUpload='01/01/2026' src={urlImage}/>
-          <ImageCard nome={nomeImage} tamanho='10MB' dataUpload='01/01/2026' src={urlImage}/>
-          <ImageCard nome={nomeImage} tamanho='10MB' dataUpload='01/01/2026' src={urlImage}/>
+          {
+            renderImageCards()
+          }
+  
         </section>
       </main>
     </Template>

@@ -9,11 +9,11 @@ interface TemplateProps {
 export const Template: React.FC<TemplateProps> = (props: TemplateProps) => {
   return (
     <>
-    <Header/>
-
-    {props.children}
-    
-    <Footer/>
+    <Header />
+    <div className="container mx-auto mt-8 px-4">
+      {props.children}
+    </div>
+    <Footer />
     </>
   );
 }
@@ -54,8 +54,10 @@ const Header: React.FC = () => {
 
 const Footer: React.FC = () => {
   return (
-    <footer>
-      <p className="mt-10 text-center text-sm">@ 2026 Imagem Peças. Todos os direitos reservados a Lívia</p>
+    <footer className="bg-red-600 text-white py-4 mt-8">
+      <div className="container mx-auto text-center">
+       <p className="mt-10 text-center text-sm"> Desenvolvimento por Lívia</p>
+      </div>
     </footer>
   )
 }

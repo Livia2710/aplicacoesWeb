@@ -7,9 +7,6 @@ class ImageService {
         const params = new URLSearchParams({ query, extension });
         const url = `${this.baseURL}?${params.toString()}`;
         const response = await fetch(url);
-        if (!response.ok) {
-            throw new Error(`Falha ao buscar imagens: HTTP ${response.status}`);
-        }
         return await response.json();
     }
       

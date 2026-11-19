@@ -3,50 +3,27 @@
 import { Template, ImageCard } from '@/componentes';
 import { Image } from '@/resources/image/image.resources';
 import { useImageService} from '@/resources/image/image.service';
-import { Search, ChevronDown, Plus, ImageDown, LoaderCircle } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Search, ChevronDown, Plus } from 'lucide-react';
+import { useState } from 'react';
+import Link from 'next/link';
 
 export default function GaleriaPage() {
-  const useService = useMemo(() => useImageService(), []);
+  const useService = useImageService();
   const [images, setImages] = useState<Image[]>([]);
   const [query, setQuery] = useState<string>("");
   const [extension, setExtension] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
+  const [searchFocused, setSearchFocused] = useState<boolean>(false);
   
-  const searchImagem = useCallback(async () => {
+  async function searchImagem(searchQuery: string = query, searchExtension: string = extension){
     setLoading(true);
     try {
-      const result = await useService.buscar(query, extension);
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const result = await useService.buscar(searchQuery, searchExtension);
       setImages(result);
-    } catch (error) {
-      console.error('Não foi possível carregar as imagens.', error);
-      setImages([]);
     } finally {
       setLoading(false);
     }
-  }, [extension, query, useService]);
-
-  useEffect(() => {
-    const timeout = window.setTimeout(() => {
-      void searchImagem();
-    }, 300);
-
-    return () => window.clearTimeout(timeout);
-  }, [searchImagem]);
-
-  function formatSize(size?: number) {
-    if (size === undefined || size === null || Number.isNaN(size)) return undefined;
-    const unit = size >= 1024 * 1024 ? 'MB' : 'KB';
-    const value = unit === 'MB' ? size / (1024 * 1024) : size / 1024;
-    return `${new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 1 }).format(value)} ${unit}`;
-  }
-
-  function formatDate(date?: string) {
-    if (!date) return undefined;
-    const parts = date.split('-').map(Number);
-    if (parts.length !== 3 || parts.some(Number.isNaN)) return date;
-    const [year, month, day] = parts;
-    return new Intl.DateTimeFormat('pt-BR').format(new Date(year, month - 1, day));
   }
 
   function renderImageCard(image: Image){
@@ -54,8 +31,8 @@ export default function GaleriaPage() {
       <ImageCard key={image.url}
                  nome={image.name}
                  src={image.url}
-                 tamanho={formatSize(image.size)}
-                 dataUpload={formatDate(image.uploadData)}
+                 tamanho={image.size}
+                 dataUpload={image.uploadData}
                  extension={image.extension}/>
     )
   }
@@ -66,7 +43,7 @@ export default function GaleriaPage() {
   }
 
   return (
-    <Template>
+    <Template loading={loading}>
   <main className="mx-auto w-full max-w-[1600px] pb-12 pt-5 sm:pt-8 px-4">
     
     {/* Seção de Filtros e Botões Alinhados */}
@@ -74,48 +51,57 @@ export default function GaleriaPage() {
       
       {/* Campo de Busca */}
       <div className="relative flex items-center w-full max-w-md">
-        <span className="absolute left-4 text-gray-400">
+        <span className="absolute left-4 text-foreground/50">
           <Search size={18} strokeWidth={1.5} />
         </span>
         <input 
           type="text" 
-          placeholder="Buscar por nome ou pela palavra chave" 
+          placeholder={searchFocused || query ? "" : "Buscar por nome ou pela palavra chave"}
+          onFocus={() => setSearchFocused(true)}
+          onBlur={() => setSearchFocused(false)}
           onChange={event => setQuery(event.target.value)}
-          className="w-full border border-gray-400 bg-transparent py-2.5 pl-12 pr-4 text-sm text-gray-800 placeholder-gray-400 outline-none focus:border-gray-600"
+          className="w-full border border-foreground/30 bg-transparent py-2.5 pl-12 pr-4 text-sm text-foreground/80 placeholder:text-foreground/45 outline-none transition focus:border-accent focus:ring-1 focus:ring-accent"
         />
       </div>
 
       {/* Select de Formatos */}
       <div className="relative flex items-center w-full sm:w-56">
-        <span className="absolute left-4 text-gray-400 pointer-events-none">
+        <span className="pointer-events-none absolute left-4 text-foreground/50">
           <ChevronDown size={18} strokeWidth={1.5} />
         </span>
         <select 
-          onChange={event => setExtension(event.target.value)} 
-          className="w-full border border-gray-400 bg-transparent py-2.5 pl-12 pr-4 text-sm text-gray-600 outline-none appearance-none cursor-pointer focus:border-gray-600"
+          onChange={event => {
+            const selectedExtension = event.target.value;
+            setExtension(selectedExtension);
+            void searchImagem(query, selectedExtension);
+          }}
+          style={{ colorScheme: 'light dark' }}
+          className="w-full cursor-pointer appearance-none border border-foreground/30 bg-transparent py-2.5 pl-12 pr-4 text-sm text-foreground/80 outline-none transition focus:border-accent focus:ring-1 focus:ring-accent"
         >
-          <option value="">Todos os formatos</option>
-          <option value="PNG">PNG</option>
-          <option value="JPEG">JPEG</option>
-          <option value="GIF">GIF</option>
+          <option className="bg-background text-foreground" value="">Todos os formatos</option>
+          <option className="bg-background text-foreground" value="PNG">PNG</option>
+          <option className="bg-background text-foreground" value="JPG">JPEG</option>
+          <option className="bg-background text-foreground" value="GIF">GIF</option>
         </select>
       </div>
 
-      {/* Botão de Buscar (Executa a função searchImagem) */}
-      <button 
+      {/* Botão de busca*/}
+      <button
         onClick={searchImagem}
         type="button"
-        className="flex items-center justify-center gap-2 border border-gray-400 bg-transparent py-2.5 px-6 text-sm text-gray-600 transition hover:border-gray-600 hover:text-gray-800 w-full sm:w-auto cursor-pointer"
+        className="flex w-full cursor-pointer items-center justify-center gap-2 rounded border border-transparent bg-accent px-6 py-2.5 text-sm font-medium uppercase tracking-[0.12em] text-black shadow-sm transition hover:border-accent hover:bg-transparent hover:text-accent hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:w-auto"
       >
-        <ImageDown size={18} strokeWidth={1.5} />
-        Buscar
+        <Search size={18} strokeWidth={1.8} />
+        BUSCAR
       </button>
 
       {/* Botão Add New */}
-      <button className="flex items-center justify-center gap-2 border border-gray-400 bg-transparent py-2.5 px-6 text-sm text-gray-600 transition hover:border-gray-600 hover:text-gray-800 w-full sm:w-auto cursor-pointer">
+      <Link href="/formulario" >
+      <button className="flex w-full cursor-pointer items-center justify-center gap-2 border border-foreground/30 bg-transparent px-6 py-2.5 text-sm text-foreground/75 transition hover:border-accent hover:text-accent sm:w-auto">
         <Plus size={18} strokeWidth={1.5} />
         Add New
       </button>
+      </Link>
     </section>
 
     {/* Título da Galeria */}
@@ -126,17 +112,8 @@ export default function GaleriaPage() {
     </div>
 
     {/* Grade de Imagens */}
-    <section aria-label="Imagens da galeria" aria-busy={loading} className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 xl:gap-6">
-      {loading ? (
-        <div className="col-span-full flex items-center justify-center gap-3 py-12 text-gray-600" role="status">
-          <LoaderCircle className="animate-spin" size={20} />
-          <span>Carregando imagens...</span>
-        </div>
-      ) : images.length > 0 ? renderImageCards() : (
-        <p className="col-span-full py-12 text-center text-gray-500" role="status">
-          Nenhuma imagem encontrada.
-        </p>
-      )}
+    <section aria-label="Imagens da galeria" className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 xl:gap-6">
+      {renderImageCards()}
     </section>
   </main>
 </Template>

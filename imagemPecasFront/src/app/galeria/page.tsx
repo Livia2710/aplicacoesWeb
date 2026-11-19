@@ -3,17 +3,50 @@
 import { Template, ImageCard } from '@/componentes';
 import { Image } from '@/resources/image/image.resources';
 import { useImageService} from '@/resources/image/image.service';
-import { Search, ChevronDown, Plus, ImageDown } from 'lucide-react';
-import { useState } from 'react';
+import { Search, ChevronDown, Plus, ImageDown, LoaderCircle } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 export default function GaleriaPage() {
-  const useService = useImageService();
+  const useService = useMemo(() => useImageService(), []);
   const [images, setImages] = useState<Image[]>([]);
+  const [query, setQuery] = useState<string>("");
+  const [extension, setExtension] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
   
-  async function searchImagem(){
-    const result = await useService.buscar();
-    setImages(result);
-    console.table(result);
+  const searchImagem = useCallback(async () => {
+    setLoading(true);
+    try {
+      const result = await useService.buscar(query, extension);
+      setImages(result);
+    } catch (error) {
+      console.error('Não foi possível carregar as imagens.', error);
+      setImages([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [extension, query, useService]);
+
+  useEffect(() => {
+    const timeout = window.setTimeout(() => {
+      void searchImagem();
+    }, 300);
+
+    return () => window.clearTimeout(timeout);
+  }, [searchImagem]);
+
+  function formatSize(size?: number) {
+    if (size === undefined || size === null || Number.isNaN(size)) return undefined;
+    const unit = size >= 1024 * 1024 ? 'MB' : 'KB';
+    const value = unit === 'MB' ? size / (1024 * 1024) : size / 1024;
+    return `${new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 1 }).format(value)} ${unit}`;
+  }
+
+  function formatDate(date?: string) {
+    if (!date) return undefined;
+    const parts = date.split('-').map(Number);
+    if (parts.length !== 3 || parts.some(Number.isNaN)) return date;
+    const [year, month, day] = parts;
+    return new Intl.DateTimeFormat('pt-BR').format(new Date(year, month - 1, day));
   }
 
   function renderImageCard(image: Image){
@@ -21,8 +54,9 @@ export default function GaleriaPage() {
       <ImageCard key={image.url}
                  nome={image.name}
                  src={image.url}
-                 tamanho={image.size}
-                 dataUpload={image.uploadDate}/>
+                 tamanho={formatSize(image.size)}
+                 dataUpload={formatDate(image.uploadData)}
+                 extension={image.extension}/>
     )
   }
 
@@ -92,8 +126,17 @@ export default function GaleriaPage() {
     </div>
 
     {/* Grade de Imagens */}
-    <section aria-label="Imagens da galeria" className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 xl:gap-6">
-      {renderImageCards()}
+    <section aria-label="Imagens da galeria" aria-busy={loading} className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 xl:gap-6">
+      {loading ? (
+        <div className="col-span-full flex items-center justify-center gap-3 py-12 text-gray-600" role="status">
+          <LoaderCircle className="animate-spin" size={20} />
+          <span>Carregando imagens...</span>
+        </div>
+      ) : images.length > 0 ? renderImageCards() : (
+        <p className="col-span-full py-12 text-center text-gray-500" role="status">
+          Nenhuma imagem encontrada.
+        </p>
+      )}
     </section>
   </main>
 </Template>
